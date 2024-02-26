@@ -1,23 +1,6 @@
 # Reference: Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex
 # constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438
 
-# Criar a sequência de zk e xk em dimensões baixas.
-# Fazer dk 
-
-using LinearAlgebra
-
-# u = Array{Vector} v = Vector
-
-function pushvec(v, w)
-    n = length(v)
-    u = Array{Vector}(undef, n+1)
-    for i in 1:n
-        u[i] = v[i]
-    end
-    u[n+1] = w
-    return u
-end
-
 function algorithm(x0, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
 
     # inicializing variables
