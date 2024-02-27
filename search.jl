@@ -1,7 +1,7 @@
 # Reference: Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex
 # constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438
 
-function algorithm(x0, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
+function algorithm(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
 
     # inicializing variables
     k = 0;
@@ -14,6 +14,19 @@ function algorithm(x0, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ =
     perror = 0;
 
     while norm(F(newx)) > ϵ
+
+
+        fk = meritfunction(newx)
+        fkm1 = meritfunction(x)
+
+       
+        test = abs(fk-fkm1) / abs(fkm1)
+       
+        println("iter = $k   tk= $tk   test = $test")
+
+        if test < ϵ && k > 0
+            return k, 0.0, newx, F(newx), norm(F(newx)), perror
+        end
 
         # descent direction
         if k == 0
@@ -34,9 +47,9 @@ function algorithm(x0, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ =
             tk = ξ
             
         end
-
         # tk determination
-        while dot(-F(newx)+tk*d,d) < σ*tk*norm(d)^2
+        while dot(-F(newx+tk*d),d) < σ*tk*norm(d)^2
+           # println("tk = $tk")
             tk = ρ*tk
         end
 
@@ -60,3 +73,17 @@ function algorithm(x0, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ =
     return k, et, newx, F(newx), norm(F(newx)), perror
 
 end
+
+
+
+function meritfunction(z)
+
+    n = size(z,1)
+    u = z[1:Int(n/2)] 
+    v = z[Int(n/2)+1:n]
+    x = u - v
+
+    return 0.1 * norm(x,1) + 0.5 * norm(A*x - b)^2
+
+end
+
