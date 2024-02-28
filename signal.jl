@@ -50,217 +50,86 @@ function arrayComposition(x)
     return u-v
 end
 
-# Function: signalMonotoneNonlinearSystem
-
-#----------Inputs----------
-# x - an element of the n-dimensional euclidean space
-# k - number of rows of the linear operator matrix (default: 1024)
-# n - number of columns of the linear operator matrix (default: 4096)
-
-function signalMonotoneNonlinearSystem(x,A)
-
-    z = Float64[] # z = F(u) = min{u, Mu + r}
-    
-    # see [1] to understand the following lines of the code
-    u = arrayDecomposition(x)
-    b = A*x
-    w =  0.1*norm(b,Inf)
-    r = w*ones(length(x)) + vcat(-b,b)
-    M=hcat(vcat(A,-A),vcat(A,-A))
-    v = M*u + r
-
-    for i in 1:length(u)
-        push!(z,min(u[i],v[i])) # see [2]
-    end
-
-    return z, w
-
-end
-
 # adaptated from [3] compose right after the F is evaluated
-function signalAlgorithm(x0, y, m, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-4)
+function signalalgorithm(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
 
     # inicializing variables
-    k = 0;
-    x = x0;
-    newx = x0;
-    d = 0;
-    tk = ξ;
-    zk = 0;
-    t0 = time()
-    perror = 0;
+    k = 0;                      # k is the number of iterations
+    xkminusone = x0;            # xkminusone is the previous term of the sequence (xk)
+    xk = xkminusone;            # xk is the current term of the sequence (xk)
+    d = xk;              
+    tk = ξ;                     # tk is the steplength parameter
+    zk = xk;                 
+    t0 = time();               
+    meritvalue = 1;
 
-    meritvalue = 1
+    while true
 
-    while meritvalue > ϵ && k < 100
+        Fxkminusone = F(xkminusone)
+        Fxk = F(xk)
+        c = norm(Fxkminusone)
+
+        println("iter = $k   meritvalue= $meritvalue")
 
         # descent direction
         if k == 0
-            d = -F(x0, y)[1]; d = arrayComposition(d)
+            d = -F(x0)
         else
-            # variables saving-calculations purposes only
-            vec_one = F(newx, y)[1]
-            vec_two = F(x,y)[1]
-            vec_one = arrayComposition(vec_one)
-            vec_two = arrayComposition(vec_two)
-            norm_one = norm(vec_two)
-
-            # continuing...
-            γk = vec_one - vec_two
-            λk = 1 + max(0,-dot(γk,tk*d)/norm(tk*d)^2)/norm_one
-            yk = γk+λk*tk*norm_one*d
             sk = tk*d
+            v = norm(sk)
+            γk = Fxk - Fxkminusone
+            λk = 1 + max(0,-dot(γk,sk)/v^2)/c
+            yk = γk+λk*tk*c*d
             τa = norm(yk)^2/dot(sk,yk)  
-            τb = dot(sk,yk)/norm(sk)^2
+            τb = dot(sk,yk)/v^2
             τk = θ*τa + (1-θ)*τb
-            βτk = dot(vec_one,yk)/dot(d,yk)-(τk+τa-τb)*(dot(vec_one,sk)/dot(d,yk))
-            βk = max(βτk,η*(dot(vec_one,d)/norm(d)^2))
-            d = -vec_one + βk*d
+            βτk = dot(Fxk,yk)/dot(d,yk)-(τk+τa-τb)*(dot(Fxk,sk)/dot(d,yk))
+            βk = max(βτk,η*(dot(Fxk,d)/norm(d)^2))
+            d = -Fxk + βk*d
 
-            x = newx
+            xkminusone = xk
             tk = ξ
-            
+
         end
 
         # tk determination
-        if k == 0
-            while dot(d+tk*d,d) < σ*tk*norm(d)^2
-                tk = ρ*tk
-            end
-        else
-            while dot(-vec_one+tk*d,d) < σ*tk*norm(d)^2
-                tk = ρ*tk
-            end
+        p = norm(d)
+        while dot(-F(xk+tk*d),d) < σ*tk*p^2
+            tk = ρ*tk
         end
 
-        zk = newx + tk*d
+        zk = xk + tk*d
+        Fzk = F(zk)
+        nFzk = norm(Fzk)
 
-        vec_three = F(zk,y)[1]
-        norm_two = norm(vec_three)
-        array_one = arrayComposition(vec_three)
+        αk = dot(Fzk,xk-zk)/nFzk^2
+        xk = proj(xk-αk*Fzk)
 
-        if meritvalue < ϵ   
+        meritfxk = meritfunction(xk)
+        meritfxkminusone = meritfunction(xkminusone)
+
+        meritvalue = abs(meritfxk- meritfxkminusone)/abs(meritfxkminusone)
+
+        if meritvalue < ϵ       #colocar código de erro
             et = time() - t0
-            perror = 1;
             k += 1
-            return k, et, zk, array_one, meritvalue, perror
-        else
-            αk = dot(array_one,newx-zk)/norm_two^2
-            newx = proj(x-αk*array_one)
+            return k, et, xk, meritvalue
         end
-
-        w1 = F(x,y)[2]
-        array_two,w2 = F(newx,y)
-        array_two = arrayComposition(array_two)
-
-        f = w2*norm(newx,1)+0.5*norm(y*newx-m,2)^2
-        g = w1*norm(x,1)+0.5*norm(y*x-m,2)^2
-
-        meritvalue = (f-g)/g
 
         k += 1
 
     end
-
-    array_two = arrayComposition(F(newx,y)[1])
-    
-    et = time() - t0
-    return k, et, newx, array_two, meritvalue, perror
 
 end
 
-# adaptated from [3] compose as later as possible
-function signAlgorithm(x0, A, m, F, proj; ξ = 0.5, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-4)
+function meritfunction(z)
 
-    # inicializing variables
-    k = 0;
-    x = x0;
-    x = arrayDecomposition(x)
-    newx = x;
-    d = 0;
-    tk = ξ;
-    zk = 0;
-    t0 = time()
-    perror = 0;
+    n = size(z,1)
+    u = z[1:Int(n/2)] 
+    v = z[Int(n/2)+1:n]
+    x = u - v
 
-    meritvalue = 1
-
-    while meritvalue > ϵ && k < 100
-
-        # descent direction
-        if k == 0
-            d = -F(x0, A)[1]
-        else
-            # variables saving-calculations purposes only
-            vec_one = F(newx, A)[1]
-            vec_two = F(x,A)[1]
-            norm_one = norm(vec_two)
-
-            # continuing...
-            γk = vec_one - vec_two
-            λk = 1 + max(0,-dot(γk,tk*d)/norm(tk*d)^2)/norm_one
-            yk = γk+λk*tk*norm_one*d
-            sk = tk*d
-            τa = norm(yk)^2/dot(sk,yk)  
-            τb = dot(sk,yk)/norm(sk)^2
-            τk = θ*τa + (1-θ)*τb
-            βτk = dot(vec_one,yk)/dot(d,yk)-(τk+τa-τb)*(dot(vec_one,sk)/dot(d,yk))
-            βk = max(βτk,η*(dot(vec_one,d)/norm(d)^2))
-            d = -vec_one + βk*d
-
-            x = newx
-            x = arrayDecomposition(x)
-            tk = ξ
-            
-        end
-
-        # tk determination
-        if k == 0
-            while dot(d+tk*d,d) < σ*tk*norm(d)^2
-                tk = ρ*tk
-            end
-        else
-            while dot(-vec_one+tk*d,d) < σ*tk*norm(d)^2
-                tk = ρ*tk
-            end
-        end
-
-        zk = newx + tk*d
-        newzk = arrayComposition(zk)
-
-        vec_three = F(newzk,A)[1]
-        norm_two = norm(vec_three)
-        array_one = arrayComposition(vec_three)
-
-        if meritvalue < ϵ   
-            et = time() - t0
-            perror = 1;
-            k += 1
-            return k, et, zk, array_one, meritvalue, perror
-        else
-            αk = dot(vec_three,newx-zk)/norm_two^2
-            newx = proj(x-αk*vec_three)
-        end
-
-        x = arrayComposition(x)
-        w1 = F(x,A)[2]
-        newx = arrayComposition(newx)
-        array_two,w2 = F(newx,y)
-        array_two = arrayComposition(array_two)
-
-        f = w2*norm(newx,1)+0.5*norm(y*newx-m,2)^2
-        g = w1*norm(x,1)+0.5*norm(y*x-m,2)^2
-
-        meritvalue = (f-g)/g
-
-        k += 1
-
-    end
-
-    array_two = arrayComposition(F(newx,A)[1])
-    
-    et = time() - t0
-    return k, et, newx, array_two, meritvalue, perror
+    return 0.1 * norm(x,1) + 0.5 * norm(A*x - b)^2
 
 end
 

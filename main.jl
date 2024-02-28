@@ -1,16 +1,14 @@
-using Distributions, Random
+using Distributions
 
-include("search.jl"); include("testfunctions.jl"); include("projections.jl")
+include("search.jl"); include("testfunctions.jl"); include("projections.jl"); include("signal.jl")
 
-n = 4096
+n = 128
 
 # Dimensão do sinal eh 4n
 
 global A = rand(Normal(),Int(n/4),n)
 
-rng = MersenneTwister(1234)
-
-sinal_original = rand(rng,n)
+sinal_original = sparseSignalGenerator(n = 128, nze = 1)
 
 global b = A * sinal_original
 
@@ -29,10 +27,11 @@ function F(z)
     return min.(z,d)
 end
 
-x0 = ones(2n) 
+y0 = A'*b 
 
+x0 = arrayDecomposition(y0)
 
-iter, t, x, Fx, Fnorm, erro = algorithm(x0,F, projRplus)
+iter, t, x, merit = signalalgorithm(x0,F, projRplus)
 
 #x = sparseSignalGenerator(n = 32, nze = 1) # x means x*
 #y = rand(Normal(), 8, 32)                  # y is a linear operator
