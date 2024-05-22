@@ -1,102 +1,142 @@
 # Reference:
 # Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. 
-# Retrieved March 15, 2024, from http://www.sfu.ca/~ssurjano.
+# Retrieved May 21, 2024, from http://www.sfu.ca/~ssurjano.
 
-using LinearAlgebra
-# ackley function
+# Many Local Minima
 
-function ackley(x; a=20, b=0.2, c=2pi)
-    
-    d = length(x)
-    
-    x1 = -a*exp(-b*sqrt(1/d*sum(x[i]^2 for i in 1:d)))
-    x2 = -exp(1/d*sum(cos(c*x[i]) for i in 1:d))
-    
-    return x1 + x2 + a + exp(1)
+# Ackley Funtion
 
+function ackley(x; a=20, b=0.2, c=2*pi)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s1 = sum(x[i]^2 for i in 1:d) # s1 means sum 1
+    s2 = sum(cos(c*x[i]) for i in 1:d) # s2 means sum 2
+    return -a*exp(-b*sqrt(s1/d))-exp(s2/d)+a+exp(1)
 end
 
-function gradackley(x; a=20, b=0.2, c=2pi)
+# Griewank Function
+function griewank(x)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s = sum(x[i]^2*0.00025 for i in 1:d) # s means sum
+    p = prod(cos(x[i]/sqrt(i)) for i in 1:d) # p means product
+    return s-p+1
+end
 
-    v = Float64[]
+# Levy Function
+function levy(x)
+    w = (x.-1)*0.25.+1
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s = sum((w[i]-1)^2*(1+10*sin(pi*w[i]+1)^2) for i in 1:(d-1))
+    return sin(pi*w[1])+s+(w[d]-1)^2*(1+sin(2*pi*w[d])^2)
+end
 
-    d = length(x)
-    k = sqrt(1/d*sum(x[i]^2 for i in 1:d))
-    
+# Rastrigin Function
+
+function rastrigin(x)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    return 10*d + sum(x[i]^2-10*cos(2*pi*x[i]) for i in 1:d)
+end
+
+# Bowl-Shaped
+
+# Perm Function 0, D, Beta
+
+function perm(x; β=1)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s = 0
+    a = 0
     for i in 1:d
-        push!(v, -(a*b)/(d*k)*exp(-b*k)*x[i]+exp(1/d*sum(cos(c*x[j]) for j in 1:d)) + c/d*sin(c*x[i]))
+        for j in 1:d
+            a+=(j+β)*(x[j]^i-1/j^i) # a means addend
+        end
+        s+=a^2
+        a=0
     end
-
-    return v
-
+    return s
 end
 
-# trid function
+# Rotated Hyper-Ellipsoid Function
 
-trid(x) = sum((x[i]-1)^2 for i in 1:size(x)[1]) - sum(x[j]*x[j-1] for j in 2:size(x)[1])
-
-function gradtrid(x)
-    
-    d = length(x)
-    v = Float64[]
-
-    push!(v,2*(x[1]-1)-x[2])
-
-    for i in 2:d-1
-        push!(v, 2*(x[i]-1)-x[i-1]-x[i+1])
-    end
-
-    push!(v, 2*(x[d]-1)-x[d-1])
-    
-    return v
-
-end
-
-# zakharov function
-function zak(x)
-    d = size(x)[1]
-    x1 = sum(x[i]^2 for i in 1:d)
-    x2 = sum(0.5*j*x[j] for j in 1:d)^2
-
-    return x1 + x2 + x2^2
-end
-
-function gradzak(x)
-    d = size(x)[1]
-    k = sum(0.5*j*x[j] for j in 1:d)
-    v = Float64[]
+function rotated(x)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s = 0
+    a = 0
     for i in 1:d
-        push!(v, 2*x[i] + i*k + 2*i*k^3)
+        for j in 1:i
+            a+=x[j]^2 # a means addend
+        end
+        s+=a
+        a=0
     end
-    return v
+    return s
 end
 
-# Dixon-Price Function
+# Sphere Function
 
-dixon(x) = (x[1]-1)^2 + sum(i*(2*x[i]^2-x[i-1])^2 for i in 2:length(x))
+sphere(x)=sum(x[i]^2 for i in 1:size(x)[1])
 
-function graddixon(x)
+# Sum of Different Powers Function
+
+sumdiffpowers(x)=sum(abs(x[i])^(i+1) for i in 1:size(x)[1])
+
+# Sum Squares Function
+
+sumsquares(x)=sum(i*x[i]^2 for i in 1:size(x)[1])
+
+# Trid Function
+
+function trid(x)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s1 = sum((x[i]-1)^2 for i in 1:d) # s1 means sum 1
+    s2 = sum(x[i]*x[i-1] for i in 2:d) # s2 means sum 2
+    return s1 - s2
+end
+
+# Plate-Shaped
+
+# Zakharov Function
+
+function zakharov(x)
     d = size(x)[1]
-    v = Float64[]
-    push!(v, 2*(x[1]-1)-4*(2*x[2]^2-x[1]))
-    for i in 2:d-1
-        push!(v, 8*i*x[i]*(2*x[i]^2-x[i-1])-2*(i+1)*(2*x[i+1]^2-x[i]))
-    end
-    push!(v, 8*d*x[d]*(2*x[d]^2-x[d-1]))
-    return v
+    s1 = sum(x[i]^2 for i in 1:d) # s1 means sum 1
+    s2 = sum(0.5*i*x[i] for i in 1:d) # s2 means sum 2
+    return s1 + s2^2 + s2^2
 end
 
-# Rosembrock function
+# Valley Shaped
 
-rosembrock(x) = sum(100*(x[i+1]-x[i]^2)^2+(x[i]-1)^2 for i in 1:length(x)-1)
+# Dixon Price Function
 
-function gradrosembrock(x)
-    d = size(x)[1]
-    v = Float64[]
-    push!(v, 2*(x[1]-1)-400*x[1]*(x[2]-x[1]^2))
-    for i in 2:d-1
-        push!(v, 200*(x[i]-x[i-1]^2)-400*x[i]*(x[i+1]-x[i]^2)+2*(x[i]-1))
+dixon(x)=(x[1]-1)^2+sum(i*(2*x[i]^2-x[i-1])^2 for i in 2:size(x)[1])
+
+
+# Rosembrock Function
+
+rosembrock(x)=sum(100*(x[i+1]-x[i]^2)^2+(x[i]-1)^2 for i in 1:(size(x)[1]-1))
+
+# Steep Ridges/Drops
+
+# Michalewicz Function
+
+michalewicz(x; m=10)=-sum(sin(x[i])*sin((i*x[i]^2)/pi)^(2*m) for i in 1:size(x)[1])
+
+# other
+
+# Perm Function D, Beta
+
+function permD(x; β=1)
+    d = size(x)[1] # calculates how many coordinates the vector x has
+    s = 0
+    a = 0
+    for i in 1:d
+        for j in 1:d
+            a+=(j^i+β)*((x[j]/j)^i-1) # a means addend
+        end
+        s+=a^2
+        a=0
     end
-    push!(v, 200*(x[d]-x[d-1]^2))
-    return v
+    return s
 end
+
+# Styblinsky-Tang Function
+
+styblitang(x) = 0.5*sum(x[i]^4-16x[i]^2+5x[i] for i in 1:size(x)[1])
