@@ -29,13 +29,6 @@ function levy(x)
     return sin(pi*w[1])+s+(w[d]-1)^2*(1+sin(2*pi*w[d])^2)
 end
 
-# Rastrigin Function
-
-function rastrigin(x)
-    d = size(x)[1] # calculates how many coordinates the vector x has
-    return 10*d + sum(x[i]^2-10*cos(2*pi*x[i]) for i in 1:d)
-end
-
 # Bowl-Shaped
 
 # Perm Function 0, D, Beta
@@ -107,11 +100,6 @@ end
 # Dixon Price Function
 
 dixon(x)=(x[1]-1)^2+sum(i*(2*x[i]^2-x[i-1])^2 for i in 2:size(x)[1])
-
-
-# Rosembrock Function
-
-rosembrock(x)=sum(100*(x[i+1]-x[i]^2)^2+(x[i]-1)^2 for i in 1:(size(x)[1]-1))
 
 # Steep Ridges/Drops
 
