@@ -3,25 +3,27 @@
 
 using LinearAlgebra
 
+#step 0
 function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
 
     # inicializing variables
-    k = 0;                      # k is the number of iterations
+    k = 0;                      # k is the number of iterations (end of step 0)
     xkminusone = x0;            # xkminusone is the previous term of the sequence (xk)
     xk = xkminusone;            # xk is the current term of the sequence (xk)
-    d = xk;              
+    d = xk;                     # d is the direction vector
     tk = ξ;                     # tk is the steplength parameter
-    zk = xk;                 
-    t0 = time();                
-    perror = 0;
-    fcounter = 0;
-
-    while norm(F(xk)) > ϵ
+    zk = xk;                    # zk is the point that is projected in the hyperplane (for more details see the reference cited above)
+    t0 = time();                # t0 is the initial time
+    perror = 0;                 # if perror == 0 then the solution comes from the first stop condition and if perror == 1 then the second stop condition has achieved
+    fcounter = 0;               # stores the number of function evaluations
+    
+    # step 1
+    while norm(F(xk)) > ϵ       # first stop condition
 
         Fxkminusone = F(xkminusone)
         Fxk = F(xk)
         c = norm(Fxkminusone)
-        fcounter += 3
+        fcounter += 2
 
         #println("iter = $k   norm= $c")
 
@@ -30,16 +32,23 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
             d = -F(x0)
             fcounter += 1
         else
+            # yk determinations
             sk = tk*d
             v = norm(sk)
             γk = Fxk - Fxkminusone
             λk = 1 + max(0,-dot(γk,sk)/v^2)/c
             yk = γk+λk*tk*c*d
+
+            # βτk determination
             τa = norm(yk)^2/dot(sk,yk)  
             τb = dot(sk,yk)/v^2
             τk = θ*τa + (1-θ)*τb
             βτk = dot(Fxk,yk)/dot(d,yk)-(τk+τa-τb)*(dot(Fxk,sk)/dot(d,yk))
+
+            # βk determination
             βk = max(βτk,η*(dot(Fxk,d)/norm(d)^2))
+
+            # dk determination
             d = -Fxk + βk*d
 
             xkminusone = xk
@@ -49,7 +58,8 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
 
         # tk determination
         p = norm(d)
-        fcounter += 1
+
+        # step 2
         while dot(-F(xk+tk*d),d) < σ*tk*p^2
             tk = ρ*tk
             fcounter += 1
@@ -60,6 +70,7 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
         nFzk = norm(Fzk)
         fcounter += 1
 
+        # step 3
         if nFzk < ϵ       #colocar código de erro
             et = time() - t0
             perror = 1;
