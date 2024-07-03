@@ -20,11 +20,6 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
     # step 1
     while norm(F(xk)) > ϵ       # first stop condition
 
-        Fxkminusone = F(xkminusone)
-        Fxk = F(xk)
-        c = norm(Fxkminusone)
-        fcounter += 2
-
         #println("iter = $k   norm= $c")
 
         # descent direction
@@ -32,7 +27,13 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
             d = -F(x0)
             fcounter += 1
         else
-            # yk determinations
+            
+            Fxkminusone = F(xkminusone)
+            Fxk = F(xk)
+            c = norm(Fxkminusone)
+            fcounter += 2
+            
+            # y_(k-1) determinations
             sk = tk*d
             v = norm(sk)
             γk = Fxk - Fxkminusone
@@ -81,6 +82,7 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
             xk = proj(xk-αk*Fzk)
         end
 
+        # step 4
         k += 1
 
     end
