@@ -93,3 +93,101 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
     return k, et, fcounter, xk, Fxk, norm(Fxk), perror
 
 end
+
+function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=1000,tol=1.e-5)
+    
+    k=0
+    t0 = time()
+
+    # step 1 (k=0)
+    Fx0 = F(x0)
+    nFx0 = norm(Fx0)
+    if nFx0 < tol
+        et = time() - t0
+        return x0, k, et, nFx0, 0
+    else
+        dk = -Fx0
+    end
+
+    # step 2 (k=0)
+    tk=xi
+    ndk=norm(dk)
+    while -F(x0+tk*dk)'*dk < sigma*tk*ndk^2
+        tk = rho*tk
+    end
+    zk=x0+tk*dk
+
+    # step 3 (k=0)
+    Fzk=F(zk)
+    nFzk=norm(Fzk)
+    if nFzk < tol
+        if proj(zk)==zk
+            et = time() - t0
+            return zk, k, et, nFzk, 1
+        end
+    else
+        alphak=(Fzk'*(x0-zk))/nFzk^2
+        x1=proj(x0-alphak*Fzk)
+        Fx1=F(x1)
+        nFx1=norm(Fx1)
+    end
+
+    # step 4 (k=0)
+    k = k+1
+
+    while k<maxiter
+
+        # step 1 (k>0)
+        if nFx1 < tol
+            et = time() - t0
+            return x1, k, et, nFx1, 0
+        else
+            gammak=Fx1-Fx0
+            sk = tk*dk
+            nsk=norm(sk)
+            lambdak=1+max(0,-(gammak'*sk)/nsk^2)/nFx0
+            yk=gammak+lambdak*nFx0*sk
+            c=sk'*yk
+            d=dk'*yk
+            tauA=norm(yk)^2/c
+            tauB=c/nsk^2
+            tauk=theta*tauA+(1-theta)*tauB
+            betak=(Fx1'*yk)/d-(tauk+tauA-tauB)*(Fx1'*sk)/d
+            betakplus=max(betak,eta*(Fx1'*dk)/ndk^2)
+            dk=-Fx1+betakplus*dk
+        end
+
+        # step 2 (k>0)
+        x0=x1
+        Fx0=Fx1
+        nFx0=nFx1
+        tk=xi
+        ndk=norm(dk)
+        while -F(x0+tk*dk)'*dk < sigma*tk*ndk^2
+            tk = rho*tk
+        end
+        zk=x0+tk*dk
+
+        # step 3 (k>0)
+        Fzk=F(zk)
+        nFzk=norm(Fzk)
+        if nFzk < tol
+            if proj(zk)==zk
+                et = time() - t0
+                return zk, k, et, nFzk, 1
+            end
+        else
+            alphak=(Fzk'*(x0-zk))/nFzk^2
+            x1=proj(x0-alphak*Fzk)
+            Fx1=F(x1)
+            nFx1=norm(Fx1)
+        end
+
+        # step 4 (k=0)
+        k = k+1
+    end
+
+    et = time() - t0
+    return x1, k, et, nFx1, 2
+
+end
