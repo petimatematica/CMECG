@@ -128,3 +128,5 @@ end
 # Styblinsky-Tang Function
 
 styblitang(x) = 0.5*sum(x[i]^4-16x[i]^2+5x[i] for i in 1:size(x)[1])
+
+problemI(x) = exp.(x) .- 1.0

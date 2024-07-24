@@ -1,10 +1,10 @@
 # Reference: Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex
 # constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438
 
-using LinearAlgebra
+using LinearAlgebra, Printf
 
 #step 0
-function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.5, ϵ = 1.0e-5)
+function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.9, θ = 0.9, ϵ = 1.0e-5)
 
     # inicializing variables
     k = 0;                      # k is the number of iterations (end of step 0)
@@ -94,7 +94,7 @@ function solver(x0, F, proj; ξ = 1.0, σ = 1.0e-4, ρ = 0.74, η = 0.5, θ = 0.
 
 end
 
-function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=1000,tol=1.e-5)
+function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.9,maxiter=10000,tol=1.e-5)
     
     k=0
     t0 = time()
@@ -121,10 +121,10 @@ function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=
     Fzk=F(zk)
     nFzk=norm(Fzk)
     if nFzk < tol
-        if proj(zk)==zk
+        #if proj(zk)==zk
             et = time() - t0
-            return zk, k, et, nFzk, 1
-        end
+            return x0, k, et, nFx0, 1
+        #end
     else
         alphak=(Fzk'*(x0-zk))/nFzk^2
         x1=proj(x0-alphak*Fzk)
@@ -136,7 +136,8 @@ function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=
     k = k+1
 
     while k<maxiter
-
+        
+        @printf("%5d  %20.15e %20.15e\n",k,nFx1,tk)
         # step 1 (k>0)
         if nFx1 < tol
             et = time() - t0
@@ -145,22 +146,23 @@ function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=
             gammak=Fx1-Fx0
             sk = tk*dk
             nsk=norm(sk)
-            lambdak=1+max(0,-(gammak'*sk)/nsk^2)/nFx0
+            lambdak=1.0+max(0.0,-(gammak'*sk)/nsk^2)/nFx0
             yk=gammak+lambdak*nFx0*sk
             c=sk'*yk
             d=dk'*yk
             tauA=norm(yk)^2/c
             tauB=c/nsk^2
-            tauk=theta*tauA+(1-theta)*tauB
+            tauk=theta*tauA+(1.0-theta)*tauB
             betak=(Fx1'*yk)/d-(tauk+tauA-tauB)*(Fx1'*sk)/d
             betakplus=max(betak,eta*(Fx1'*dk)/ndk^2)
-            dk=-Fx1+betakplus*dk
+            dk = -Fx1+betakplus*dk
         end
 
         # step 2 (k>0)
         x0=x1
         Fx0=Fx1
         nFx0=nFx1
+
         tk=xi
         ndk=norm(dk)
         while -F(x0+tk*dk)'*dk < sigma*tk*ndk^2
@@ -172,10 +174,13 @@ function ding(x0, F, proj;xi=0.9,sigma=1.e-5,rho=0.74,eta=0.1,theta=0.1,maxiter=
         Fzk=F(zk)
         nFzk=norm(Fzk)
         if nFzk < tol
-            if proj(zk)==zk
-                et = time() - t0
-                return zk, k, et, nFzk, 1
-            end
+            et = time() - t0
+            return x0, k, et, nFzk, 1
+        #end
+            # if proj(zk)==zk
+            #     et = time() - t0
+            #     return zk, k, et, nFzk, 1
+            # end
         else
             alphak=(Fzk'*(x0-zk))/nFzk^2
             x1=proj(x0-alphak*Fzk)
