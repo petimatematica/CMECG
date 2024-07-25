@@ -1,15 +1,7 @@
 # Reference: Izmailov, A., & Solodiv, M. (2007). Otimização, volume 2: métodos computacionais. IMPA
 
-function projRplus(x)
-    
-    v = Float64[]
+id(x) = x # for unconstrained problems
 
-    for i in 1:length(x)
-        push!(v, max(0,x[i]))
-    end
+projRplus(x)=max.(0.0,x) # non negative constraint
 
-    return v
-
-end
-
-id(x) = x
+projbox(x; a=0.0, b=1.0) = min.(max.(a, x), b) # n dimensional box constraint
