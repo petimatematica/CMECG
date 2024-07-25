@@ -1,4 +1,4 @@
-include("procedures.jl"); include("testfunctions.jl"); include("projections.jl")
+include("testfunctions.jl"); include("projections.jl")
 
 x0 = ones(100) # guess
 F = gradsumsquares # vector field
