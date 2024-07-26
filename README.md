@@ -8,7 +8,7 @@ x0 = ones(100) # guess
 F = gradsumsquares # see testfunctions.jl for more details
 proj = projRplus # see projections.jl for more details
 
-x,k,t,nFx,Fevals,erro=ding(x0,F,proj, maxiter=1.e4) # see search.jl for more details
+x,k,t,nFx,Fevals,error=ding(x0,F,proj, maxiter=1.e4) # see search.jl for more details
 ```
 # testfunction.jl
 This file contain the test functions used in our work.
@@ -32,7 +32,7 @@ This function returns the following informations:
 - t (Float64) elapsed time to solve the problem;
 - nFx (Float64) contain the value of the euclidean norm of the current estimation;
 - Fevals (Int) number of function evaluations;
-- ierror (Int) the value stored in this variable tells the following messages: 0 - ||F(x0)||<tol, 1 - ||F(zk)||<tol, 2 - the maximum number of iterations has been exceeded.
+- error (Int) the value stored in this variable tells the following messages: 0 - ||F(x0)||<tol, 1 - ||F(zk)||<tol, 2 - the maximum number of iterations has been exceeded.
 
 # References 
 [1] Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. Retrieved July 23, 2024, from http://www.sfu.ca/~ssurjano.  
