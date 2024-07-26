@@ -13,7 +13,7 @@ x,k,t,nFx,Fevals,error=ding(x0,F,proj, maxiter=1.e4) # see search.jl for more de
 # testfunction.jl
 This file contain the test functions used in our work.
 
-# testfunction.jl
+# projections.jl
 This file contain the projections used in our work.
 
 # search.jl
