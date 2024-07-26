@@ -17,7 +17,7 @@ This file contain the test functions used in our work.
 This file contain the projections used in our work.
 
 # search.jl
-This file contains the function called ding which implements the projected conjugate gradient method proposed in the reference [2] to find zeros of a vector field. To invoke this function you need the following informations:
+This file contains the function called ding which implements the projected conjugate gradient method proposed in the reference [3] to find zeros of a vector field. To invoke this function you need the following informations:
 
 - x0 (vector{Float64}) current estimation to be a zero of the vector field;
 - F (function) objective function.
