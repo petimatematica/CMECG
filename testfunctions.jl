@@ -1,4 +1,5 @@
-# Reference: https://www.sfu.ca/~ssurjano/optimization.html
+#= Reference: Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. 
+              Retrieved July 23, 2024, from http://www.sfu.ca/~ssurjano.=#
 
 # Bowl-Shaped
 
