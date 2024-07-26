@@ -1,4 +1,4 @@
-# Main.jl
+# main.jl
 This file contains the main file which includes all the other files presented in this readme. Its code is written below.
 
 ```julia
@@ -11,4 +11,10 @@ proj = projRplus # see projections.jl for more details
 x,k,t,nFx,Fevals,erro=ding(x0,F,proj, maxiter=1.e4) # see search.jl for more details
 ```
 # testfunction.jl
-This file contain the test function used on our work.
+This file contain the test functions used in our work.
+
+# testfunction.jl
+This file contain the projections used in our work.
+
+# search.jl
+Hello!
