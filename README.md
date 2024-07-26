@@ -19,5 +19,7 @@ This file contain the projections used in our work.
 # search.jl
 This file contains the function called ding which implements the PRP method (conjugate gradient) or the gradient method where the steplength is computated by Armijo's rule. To invoke this function you need the following informations:
 
-# Reference: 
-Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438
+# References 
+-Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. Retrieved July 23, 2024, from http://www.sfu.ca/~ssurjano.
+-Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438
+
