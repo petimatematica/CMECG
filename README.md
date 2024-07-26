@@ -10,3 +10,5 @@ proj = projRplus # see projections.jl for more details
 
 x,k,t,nFx,Fevals,erro=ding(x0,F,proj, maxiter=1.e4) # see search.jl for more details
 ```
+# testfunction.jl
+This file contain the test function used on our work.
