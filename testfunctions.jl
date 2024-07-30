@@ -22,8 +22,3 @@ function gradtrid(x)
     G[n]=2.0*(x[n]-1.0)-x[n-1]
     return G
 end
-
-#=
-Assumption 1 - 
-Assumption 2 -
-Assumption 3 - OK!=#
