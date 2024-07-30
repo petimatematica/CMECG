@@ -36,7 +36,7 @@ This function returns the following informations:
 
 # References 
 [1] Izmailov, A., & Solodiv, M. (2007). Otimização, volume 2: métodos computacionais. IMPA.   
-[2] Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. Retrieved July 23, 2024, from http://www.sfu.ca/~ssurjano](http://www.sfu.ca/~ssurjano/optimization.html.  
+[2] Surjanovic, S. & Bingham, D. (2013). Virtual Library of Simulation Experiments: Test Functions and Datasets. Retrieved July 23, 2024, from http://www.sfu.ca/~ssurjano/optimization.html.  
 [3] Yanyun Ding, Yunhai Xiao & Jianwei Li (2017) A class of conjugate gradient methods for convex constrained monotone equations, Optimization, 66:12, 2309-2328, DOI:10.1080/02331934.2017.1372438.  
 
 
